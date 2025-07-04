@@ -22,20 +22,24 @@ class ProcessingFrame(ttk.Frame):
 
         self.radio_clean = ttk.Radiobutton(self, text="Очистить пустые строки",
                                            variable=self.process_mode, value="clean",
-                                           command=self.update_input_states)
+                                           command=lambda: [self.update_input_states(), self.controller.summary_frame.update_summary()])
         self.radio_rows = ttk.Radiobutton(self, text="Выгрузить строки от-до",
                                           variable=self.process_mode, value="rows",
-                                          command=self.update_input_states)
+                                          command=lambda: [self.update_input_states(), self.controller.summary_frame.update_summary()])
         self.radio_cols = ttk.Radiobutton(self, text="Выгрузить столбцы от-до",
                                           variable=self.process_mode, value="cols",
-                                          command=self.update_input_states)
+                                          command=lambda: [self.update_input_states(), self.controller.summary_frame.update_summary()])
 
         self.radio_clean.grid(row=1, column=0, sticky="w")
         self.radio_rows.grid(row=2, column=0, sticky="w")
         self.radio_cols.grid(row=3, column=0, sticky="w")
 
         self.entry_rows = ttk.Entry(self, textvariable=self.rows_range)
+        self.entry_rows.bind("<Return>", lambda e: [self.controller.summary_frame.update_summary(), # Для отзывчивого поведения интерфейса, 
+                                                    self.entry_rows.master.focus_set()])            # убирает фокус (курсор) с поля ввода
         self.entry_cols = ttk.Entry(self, textvariable=self.cols_range)
+        self.entry_cols.bind("<Return>", lambda e: [self.controller.summary_frame.update_summary(), # Для отзывчивого поведения интерфейса, 
+                                                    self.entry_cols.master.focus_set()])            # убирает фокус (курсор) с поля ввода
         self.entry_rows.grid(row=2, column=1, sticky="w")
         self.entry_cols.grid(row=3, column=1, sticky="w")
 

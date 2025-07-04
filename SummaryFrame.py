@@ -28,7 +28,6 @@ class SummaryFrame(ttk.Frame):
         source = self.controller.source_frame.source_file if mode == "once" else self.controller.source_frame.source_folder
         output = self.controller.source_frame.output_folder
         process_mode = self.controller.processing_frame.process_mode.get()
-
         if process_mode == "clean":
             process_text = "Очистить пустые строки"
         elif process_mode == "rows":
@@ -37,19 +36,21 @@ class SummaryFrame(ttk.Frame):
             process_text = f"Столбцы: {self.controller.processing_frame.cols_range.get()}"
         else:
             process_text = "Не выбрано"
-
+            ### Для отображения шаблона в режиме таймера
+        template = "-"
+        if mode == "timer":
+            template_value = self.controller.source_frame.template_name.get().strip()
+            template = template_value if template_value else ""
         summary = (
-            f"Шаблон: {mode_text}\n\n"
+            f"Режим: {mode_text}\n\n"
+            f"Шаблон: {template}\n\n"
             f"Источник: {source}\n\n"
             f"Конечная папка: {output}\n\n"
-            f"Обработка: {process_text}"
-        )
-
+            f"Обработка: {process_text}" )
         self.summary_text.configure(state='normal')
         self.summary_text.delete("1.0", tk.END)
         self.summary_text.insert(tk.END, summary)
         self.summary_text.configure(state='disabled')
-
         # Автоматически подстроить высоту по количеству строк
         lines = summary.count("\n") + 1
         self.summary_text.configure(height=lines)
