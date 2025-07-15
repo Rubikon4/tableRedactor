@@ -7,12 +7,13 @@ from tkinter import ttk
 class MainApp(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Обработка Excel файлов")
-        self.geometry("800x600")
-        self.resizable(False, False)
-        
-        self.grid_rowconfigure(2, weight=1)
+
+        self.grid_rowconfigure(1, weight=3)
         self.grid_columnconfigure(0, weight=1)
+
+        self.title("Обработка Excel файлов")
+        self.geometry("1080x720")
+        self.resizable(True, True)
 
         self.source_frame = SourceFrame(self, self)
         self.source_frame.grid(row=0, column=0, sticky="nsew")
@@ -22,7 +23,6 @@ class MainApp(tk.Tk):
 
         self.summary_frame = SummaryFrame(self, self)
         self.summary_frame.grid(row=2, column=0, sticky="nsew")
-
 if __name__ == "__main__":
     app = MainApp()
     app.mainloop()

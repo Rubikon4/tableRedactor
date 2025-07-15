@@ -6,21 +6,24 @@ from TimerRunner import TimerRunner
 
 
 class SummaryFrame(ttk.Frame):
-    def __init__(self, parent, controller):
-        super().__init__(parent, padding=10)
+    def __init__(self, Main, controller):
+        super().__init__(Main, padding=10, borderwidth=2, relief="solid")
         self.controller = controller
         self.timer = None
 
-        self.summary_text = tk.Text(self, height=4, width=80, state='disabled', wrap='word')
-        self.summary_text.pack(pady=(0, 10))
+        self.columnconfigure(0, weight=1)
 
-        self.label_status = ttk.Label(self, text="", foreground="red")
-        self.label_status.pack()
+        self.summary_text = tk.Text(self, height=4, width=80, state='disabled', wrap='word')
+        self.summary_text.grid(row=0, column=0, sticky="w")
+
+        # self.label_status = ttk.Label(self, text="", foreground="red") ХЗ че это 
+        # self.label_status.grid(row=1, column=0, sticky="w") ХЗ че это 
 
         self.run_button = ttk.Button(self, text="ЗАПУСК", command=self.on_run)
-        self.run_button.pack(pady=(10, 0))
-
+        self.run_button.grid(row=2, column=0, sticky="w")
+        
         self.update_summary()
+
 
     def update_summary(self):
         mode = self.controller.source_frame.mode.get()

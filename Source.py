@@ -3,8 +3,8 @@ from tkinter import ttk, messagebox, filedialog
 import os
 
 class SourceFrame(ttk.Frame):
-    def __init__(self, parent, controller):
-        super().__init__(parent, padding=10, borderwidth=1, relief="solid")
+    def __init__(self, Main, controller):
+        super().__init__(Main, padding=10, borderwidth=2, relief="solid")
         self.controller = controller
         self.mode = tk.StringVar(value="once")
         self.template_name = tk.StringVar()
@@ -18,10 +18,12 @@ class SourceFrame(ttk.Frame):
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
         self.columnconfigure(2, weight=1)
+        self.columnconfigure(3, weight=1)
+        self.columnconfigure(4, weight=1)
         ### Вступительная колонка
-        mode_label = ttk.Label(self, text="Выберите режим:")
+        mode_label = ttk.Label(self, text="Выберите режим и конечную папку:")
         mode_label.grid(row=0, column=0, sticky="w", padx=5, pady=5)
-        self.output_button = ttk.Button(self, text="Выбрать конечную папку", 
+        self.output_button = ttk.Button(self, text="Конечная папка", 
                                         command=lambda:[
                                         self.choose_output_folder(), 
                                         self.controller.summary_frame.update_summary()])
@@ -52,7 +54,30 @@ class SourceFrame(ttk.Frame):
         self.entry_template.grid(row=3, column=2, sticky="ew", padx=5, pady=5)
         self.entry_template.bind(
             "<Return>",
-            lambda e: [self.validate_template(), self.entry_template.master.focus_set()]) # Для отзывчивого поведения интерфейса, убирает фокус (курсор) с поля ввода                                         
+            lambda e: [self.validate_template(), self.entry_template.master.focus_set()])
+        ### Расширенная обработка
+        self.radio_master = ttk.Radiobutton(self, text="Расширенная обработка",
+                                            variable=self.mode, value="master",
+                                            command=self.refresh_summary_window) ### вот сюда добавить отклик в процессинг на нажатие
+        self.radio_master.grid(row=0, column=3, sticky="w", padx=5, pady=5)
+        self.btn_master_choose_file = ttk.Button(self, text="Выбрать файл",
+                                                       command=lambda:[
+                                                       self.choose_file(),
+                                                       self.controller.summary_frame.update_summary()])
+        self.btn_master_choose_file.grid(row=1, column=3, sticky="w", padx=5, pady=5)
+        self.btn_master_choose_folder = ttk.Button(self, text="Выбрать папку",
+                                               command=lambda:[
+                                               self.choose_folder(),
+                                               self.controller.summary_frame.update_summary()])
+        self.btn_master_choose_folder.grid(row=1, column=4, sticky="w", padx=5, pady=5)
+        label_master_example = ttk.Label(self, text="Шаблон названия файла:")
+        label_master_example.grid(row=2, column=4, sticky="w", padx=5, pady=(10, 0))
+        self.entry_master_template = ttk.Entry(self, textvariable=self.template_name)
+        self.entry_master_template.grid(row=3, column=4, sticky="ew", padx=5, pady=5)
+        self.entry_master_template.bind(
+            "<Return>",
+            lambda e: [self.validate_template(), self.entry_master_template.master.focus_set()])
+
     def refresh_summary_window(self):
         self.update_inputs_state()
         self.controller.summary_frame.update_summary()
@@ -62,10 +87,24 @@ class SourceFrame(ttk.Frame):
             self.btn_choose_file.state(["!disabled"])
             self.btn_choose_folder.state(["disabled"])
             self.entry_template.state(["disabled"])
-        else:
+            self.btn_master_choose_file.state(["disabled"])
+            self.btn_master_choose_folder.state(["disabled"])
+            self.entry_master_template.state(["disabled"])
+        elif mode == "timer":
             self.btn_choose_file.state(["disabled"])
             self.btn_choose_folder.state(["!disabled"])
             self.entry_template.state(["!disabled"])
+            self.btn_master_choose_file.state(["disabled"])
+            self.btn_master_choose_folder.state(["disabled"])
+            self.entry_master_template.state(["disabled"])
+        elif mode == "master":
+            self.btn_choose_file.state(["disabled"])
+            self.btn_choose_folder.state(["disabled"])
+            self.entry_template.state(["disabled"])
+            self.btn_master_choose_file.state(["!disabled"])
+            self.btn_master_choose_folder.state(["!disabled"])
+            self.entry_master_template.state(["!disabled"])
+
     def choose_file(self):
         file_path = filedialog.askopenfilename(filetypes=[("Excel files", "*.xlsx *.xls")])
         if file_path:
