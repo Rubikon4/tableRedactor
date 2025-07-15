@@ -27,7 +27,12 @@ class SummaryFrame(ttk.Frame):
 
     def update_summary(self):
         mode = self.controller.source_frame.mode.get()
-        mode_text = "Единоразовая обработка" if mode == "once" else "Обработка по таймеру"
+        if mode == "once":
+            mode_text="Единоразовая обработка файла"
+        elif mode == "timer":
+            mode_text="Обработка по таймеру (мониторинг)"
+        elif mode == "master":
+            mode_text="Расширенный режим"
         source = self.controller.source_frame.source_file if mode == "once" else self.controller.source_frame.source_folder
         output = self.controller.source_frame.output_folder
         process_mode = self.controller.processing_frame.process_mode.get()
@@ -63,9 +68,13 @@ class SummaryFrame(ttk.Frame):
         processing_frame = self.controller.processing_frame
 
         mode = source_frame.mode.get()
-        source_path = source_frame.source_file if mode == "once" else source_frame.source_folder
+        source_path = source_frame.source_folder if mode == ("timer", 'master') else source_frame.source_file
         output_path = source_frame.output_folder
         process_mode = processing_frame.process_mode.get()
+        date_mode = processing_frame.date_mode.get()
+        # source_path = source_frame.source_file if mode == "once" else source_frame.source_folder УДАЛИ СТРОКУ ВЫШЕ ЕСЛИ ВСЕ ОК
+        
+        """     Обработка ошибок     """
 
         if not source_path or not output_path:
             messagebox.showwarning("Ошибка", "Не выбран источник или конечная папка.")
@@ -76,11 +85,23 @@ class SummaryFrame(ttk.Frame):
             messagebox.showwarning("Ошибка", "Не указан диапазон строк.")
             self.reset_all()
             return
+        
+        if mode == "master" and not processing_frame.master_rows_range.get().strip(): # добавь сброс введенного
+            messagebox.showwarning("Ошибка", "Не указан диапазон строк.")
+            return
 
         if process_mode == "cols" and not processing_frame.cols_range.get().strip():
             messagebox.showwarning("Ошибка", "Не указан диапазон столбцов.")
             self.reset_all()
             return
+        
+        """
+        
+        ДОБАВИТЬ ОБРАБОТКУ ОШИБОК ДЛЯ MASTER (для столбцов уже реализовал)
+        
+        """
+
+        """     Запуск     """
 
         if mode == "once":
             processor = TableProcessor(source_path)
@@ -115,7 +136,7 @@ class SummaryFrame(ttk.Frame):
                 self.reset_all()
             else:
                 messagebox.showwarning("Ошибка", "Не удалось сохранить файл.")
-        else:
+        elif mode == "timer":
             self.label_status.config(text="ИДЁТ ОБРАБОТКА...")
             self.timer = TimerRunner(source_path, output_path,
                                      processing_frame.process_mode.get(),
@@ -123,6 +144,8 @@ class SummaryFrame(ttk.Frame):
                                      processing_frame.cols_range.get())
             self.timer.start()
             messagebox.showinfo("Успех", "Таймер обработки запущен. Ожидайте...")
+        elif mode == "master":
+            """     Если файл то 1 если папка то 2    """
 
     def reset_all(self):
         self.controller.source_frame.template_name.set("")

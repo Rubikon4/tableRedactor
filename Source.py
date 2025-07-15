@@ -20,7 +20,7 @@ class SourceFrame(ttk.Frame):
         self.columnconfigure(2, weight=1)
         self.columnconfigure(3, weight=1)
         self.columnconfigure(4, weight=1)
-        ### Вступительная колонка
+        
         mode_label = ttk.Label(self, text="Выберите режим и конечную папку:")
         mode_label.grid(row=0, column=0, sticky="w", padx=5, pady=5)
         self.output_button = ttk.Button(self, text="Конечная папка", 
@@ -28,55 +28,74 @@ class SourceFrame(ttk.Frame):
                                         self.choose_output_folder(), 
                                         self.controller.summary_frame.update_summary()])
         self.output_button.grid(row=1, column=0, sticky="w", padx=5, pady=5)
-        ### Одиночная обработка
+        
+        """    ONCE    """
+
         self.radio_once = ttk.Radiobutton(self, text="Единоразовая обработка",
                                           variable=self.mode, value="once",
-                                          command=self.refresh_summary_window)
-        self.radio_once.grid(row=0, column=1, sticky="w", padx=5, pady=5)
+                                          command=lambda:[
+                                          self.refresh_summary_window(),
+                                          self.controller.processing_frame.refresh_window(),
+                                          self.controller.processing_frame.update_input_state()    
+                                          ])
         self.btn_choose_file = ttk.Button(self, text="Выбрать файл",
                                           command=lambda:[
                                           self.choose_file(),
-                                          self.controller.summary_frame.update_summary()])
+                                          self.controller.summary_frame.update_summary(),
+                                          ])
+        
+        self.radio_once.grid(row=0, column=1, sticky="w", padx=5, pady=5)
         self.btn_choose_file.grid(row=1, column=1, sticky="w", padx=5, pady=5)
-        ### Тайминг обработка
+        
+        """    TIMER    """
+        
         self.radio_timer = ttk.Radiobutton(self, text="Обработка по таймеру",
                                            variable=self.mode, value="timer",
-                                           command=self.refresh_summary_window)
-        self.radio_timer.grid(row=0, column=2, sticky="w", padx=5, pady=5)
+                                           command=lambda:[
+                                           self.refresh_summary_window(),
+                                           self.controller.processing_frame.refresh_window(),
+                                           self.controller.processing_frame.update_input_state()
+                                           ])
         self.btn_choose_folder = ttk.Button(self, text="Выбрать папку",
                                             command=lambda:[
                                             self.choose_folder(),
                                             self.controller.summary_frame.update_summary()])
-        self.btn_choose_folder.grid(row=1, column=2, sticky="w", padx=5, pady=5)
         label_example = ttk.Label(self, text="Шаблон названия файла:")
-        label_example.grid(row=2, column=2, sticky="w", padx=5, pady=(10, 0))
         self.entry_template = ttk.Entry(self, textvariable=self.template_name)
+        self.entry_template.bind("<Return>", lambda e: [self.validate_template(), 
+                                                        self.entry_template.master.focus_set()])
+        
+        self.radio_timer.grid(row=0, column=2, sticky="w", padx=5, pady=5)
+        self.btn_choose_folder.grid(row=1, column=2, sticky="w", padx=5, pady=5)
+        label_example.grid(row=2, column=2, sticky="w", padx=5, pady=(10, 0))
         self.entry_template.grid(row=3, column=2, sticky="ew", padx=5, pady=5)
-        self.entry_template.bind(
-            "<Return>",
-            lambda e: [self.validate_template(), self.entry_template.master.focus_set()])
-        ### Расширенная обработка
+        
+        """    MASTER    """
+
         self.radio_master = ttk.Radiobutton(self, text="Расширенная обработка",
                                             variable=self.mode, value="master",
-                                            command=self.refresh_summary_window) ### вот сюда добавить отклик в процессинг на нажатие
-        self.radio_master.grid(row=0, column=3, sticky="w", padx=5, pady=5)
+                                            command=lambda:[
+                                            self.refresh_summary_window(),
+                                            self.controller.processing_frame.refresh_window()
+                                            ]) 
         self.btn_master_choose_file = ttk.Button(self, text="Выбрать файл",
                                                        command=lambda:[
                                                        self.choose_file(),
                                                        self.controller.summary_frame.update_summary()])
-        self.btn_master_choose_file.grid(row=1, column=3, sticky="w", padx=5, pady=5)
         self.btn_master_choose_folder = ttk.Button(self, text="Выбрать папку",
                                                command=lambda:[
                                                self.choose_folder(),
                                                self.controller.summary_frame.update_summary()])
-        self.btn_master_choose_folder.grid(row=1, column=4, sticky="w", padx=5, pady=5)
         label_master_example = ttk.Label(self, text="Шаблон названия файла:")
-        label_master_example.grid(row=2, column=4, sticky="w", padx=5, pady=(10, 0))
         self.entry_master_template = ttk.Entry(self, textvariable=self.template_name)
+        self.entry_master_template.bind("<Return>", lambda e: [self.validate_template(), 
+                                                   self.entry_master_template.master.focus_set()])
+        
+        self.radio_master.grid(row=0, column=3, sticky="w", padx=5, pady=5)
+        self.btn_master_choose_file.grid(row=1, column=3, sticky="w", padx=5, pady=5)
+        self.btn_master_choose_folder.grid(row=1, column=4, sticky="w", padx=5, pady=5)
+        label_master_example.grid(row=2, column=4, sticky="w", padx=5, pady=(10, 0))
         self.entry_master_template.grid(row=3, column=4, sticky="ew", padx=5, pady=5)
-        self.entry_master_template.bind(
-            "<Return>",
-            lambda e: [self.validate_template(), self.entry_master_template.master.focus_set()])
 
     def refresh_summary_window(self):
         self.update_inputs_state()

@@ -9,12 +9,12 @@ class ProcessingFrame(ttk.Frame):
         self.process_mode = tk.StringVar(value="clean")
         self.rows_range = tk.StringVar()
         self.cols_range = tk.StringVar()
+
         # self.delete_rows_mode = tk.StringVar()
-        self.title_row_master = tk.StringVar()
         self.entry_rows_master = tk.StringVar()
-        self.whithoutDate_mode_master = tk.StringVar()
-        self.fromCell_mode_master = tk.StringVar()
-        self.autoDetectDate_mode_master = tk.StringVar()
+        self.master_title_row = tk.StringVar()
+        self.master_rows_range = tk.StringVar()
+        self.date_mode = tk.StringVar()
         self.cellDate_master = tk.StringVar()
         # self.dateToTitle_mode = tk.StringVar()
         # self.entry_dateColumn_master = tk.StringVar
@@ -28,19 +28,23 @@ class ProcessingFrame(ttk.Frame):
         self.columnconfigure(1, weight=1)
         self.columnconfigure(2, weight=8)
 
-        # Другие обработки
+        """    ONCE & TIMER    """
+        
         self.label = ttk.Label(self, text="Выберите тип обработки:")
         self.label.grid(row=0, column=0, sticky="w")
 
         self.radio_clean = ttk.Radiobutton(self, text="Очистить пустые строки",
                                            variable=self.process_mode, value="clean",
-                                           command=lambda: [self.update_input_state(), self.controller.summary_frame.update_summary()])
+                                           command=lambda: [self.update_input_state(), 
+                                                            self.controller.summary_frame.update_summary()])
         self.radio_rows = ttk.Radiobutton(self, text="Выгрузить строки от-до",
                                           variable=self.process_mode, value="rows",
-                                          command=lambda: [self.update_input_state(), self.controller.summary_frame.update_summary()])
+                                          command=lambda: [self.update_input_state(), 
+                                                           self.controller.summary_frame.update_summary()])
         self.radio_cols = ttk.Radiobutton(self, text="Выгрузить столбцы от-до",
                                           variable=self.process_mode, value="cols",
-                                          command=lambda: [self.update_input_state(), self.controller.summary_frame.update_summary()])
+                                          command=lambda: [self.update_input_state(), 
+                                                           self.controller.summary_frame.update_summary()])
 
         self.radio_clean.grid(row=1, column=0, sticky="w")
         self.radio_rows.grid(row=2, column=0, sticky="w")
@@ -55,30 +59,30 @@ class ProcessingFrame(ttk.Frame):
         self.entry_rows.grid(row=2, column=1, sticky="w")
         self.entry_cols.grid(row=3, column=1, sticky="w")
 
-        # Расширенная обработка
+        """    MASTER   """
         self.label_master = ttk.Label(self, text="Настройки расширенной обработки:")
         self.ckbtn_deleteRows_master = ttk.Checkbutton(self, text="Очистить пустые строки?",
                                                         # variable=self.delete_rows_mode,
                                                         command=lambda: [self.update_input_state(),
                                                                          self.controller.summary_frame.update_summary()])
         self.label_titleRowNum_master = ttk.Label(self, text="Номер строки заголовка")
-        self.entry_titleRowNum_master = ttk.Entry(self, textvariable=self.title_row_master)                                 # добавь focus_set
+        self.entry_titleRowNum_master = ttk.Entry(self, textvariable=self.master_title_row)                                 # добавь focus_set и бинд на ентер
         self.label_enterRows_master = ttk.Label(self, text="Выгрузить строки от-до")
-        self.entry_enterRows_master = ttk.Entry(self, textvariable=self.entry_rows_master)                                  # добавь focus_set
+        self.entry_enterRows_master = ttk.Entry(self, textvariable=self.master_rows_range)                                  # добавь focus_set и бинд на ентер
         self.label_dateMode_master = ttk.Label(self, text="Настройки даты")
         self.robtn_noDate_master = ttk.Radiobutton(self, text="Без даты",
-                                                   variable=self.whithoutDate_mode_master, value="empty",
+                                                   variable=self.date_mode, value="empty",
                                                    command=lambda: [self.update_input_state(), 
                                                                     self.controller.summary_frame.update_summary()])
         self.robtn_autoDate_master = ttk.Radiobutton(self, text="Найти автоматически",
-                                                     variable=self.autoDetectDate_mode_master, value="auto",
+                                                     variable=self.date_mode, value="auto",
                                                      command=lambda: [self.update_input_state(), 
                                                                       self.controller.summary_frame.update_summary()])
         self.robtn_cellDate_master = ttk.Radiobutton(self, text="Из ячейки",
-                                                     variable=self.fromCell_mode_master, value="cell",
+                                                     variable=self.date_mode, value="cell",
                                                      command=lambda: [self.update_input_state(), 
                                                                       self.controller.summary_frame.update_summary()])
-        self.entry_cell_master = ttk.Entry(self, textvariable=self.cellDate_master)                                         # добавь focus_set
+        self.entry_cell_master = ttk.Entry(self, textvariable=self.cellDate_master)                                         # добавь focus_set и бинд на ентер
         # self.ckbtn_dateToTitle_master = ttk.Checkbutton(self, text="Добавить дату в название?",
                                                         #dateToTitle_mode variable=self.dateToTitle_mode,
                                                         # command=lambda: [self.update_input_state(),
@@ -118,7 +122,9 @@ class ProcessingFrame(ttk.Frame):
         
 
     def update_input_state(self):                                                                                               # обновил название (убрал s на конце)
+        """Обновляет доступность полей ввода для once/timer режимов"""
         mode = self.process_mode.get()
+        self.entry_cols.state(["disabled"]) and self.entry_rows.state(["disabled"]) if mode == "clean" else None
         self.entry_rows.state(["!disabled"] if mode == "rows" else ["disabled"])
         self.entry_cols.state(["!disabled"] if mode == "cols" else ["disabled"])
         
@@ -126,8 +132,12 @@ class ProcessingFrame(ttk.Frame):
         """Обновляет доступность в зависимости от выбронного режима"""
         mode = self.controller.source_frame.mode.get()
         if mode == "master":
+            for w in self.master_widgets:
+                w.state(["!disabled"])
             for w in self.onceAndTimer_widgets:
                 w.state(["disabled"])
-        if mode == "once" or "timer":
+        if mode in ("once", "timer"):
+            for w in self.onceAndTimer_widgets:
+                w.state(["!disabled"])
             for w in self.master_widgets:
                 w.state(["disabled"])
