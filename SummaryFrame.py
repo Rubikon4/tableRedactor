@@ -68,18 +68,25 @@ class SummaryFrame(ttk.Frame):
         processing_frame = self.controller.processing_frame
 
         mode = source_frame.mode.get()
-        source_path = source_frame.source_folder if mode == ("timer", 'master') else source_frame.source_file
+        mode_master = source_frame.mode_master.get()
+        if mode in ("once", "timer"):   # путь файла/папки от режима
+            if mode == "timer":
+                source_path = source_frame.source_folder 
+            elif mode == "once":
+                source_path = source_frame.source_file
+        elif mode == "master":
+            source_filePath_master = source_frame.source_file
+            source_folderPath_master =source_frame.source_folder  
         output_path = source_frame.output_folder
         process_mode = processing_frame.process_mode.get()
         date_mode = processing_frame.date_mode.get()
-        # source_path = source_frame.source_file if mode == "once" else source_frame.source_folder УДАЛИ СТРОКУ ВЫШЕ ЕСЛИ ВСЕ ОК
         
         """     Обработка ошибок     """
 
-        if not source_path or not output_path:
-            messagebox.showwarning("Ошибка", "Не выбран источник или конечная папка.")
-            self.reset_all()
-            return
+        # if not source_path or not output_path:
+        #     messagebox.showwarning("Ошибка", "Не выбран источник или конечная папка.")
+        #     self.reset_all()
+        #     return
 
         if process_mode == "rows" and not processing_frame.rows_range.get().strip():
             messagebox.showwarning("Ошибка", "Не указан диапазон строк.")
@@ -96,7 +103,7 @@ class SummaryFrame(ttk.Frame):
             return
         
         """
-        
+
         ДОБАВИТЬ ОБРАБОТКУ ОШИБОК ДЛЯ MASTER (для столбцов уже реализовал)
         
         """
@@ -127,15 +134,14 @@ class SummaryFrame(ttk.Frame):
                     messagebox.showwarning("Ошибка", "Неверный формат диапазона столбцов (ожидается: 1 3).")
                     self.reset_all()
                     return
-
             export_path = os.path.join(output_path, "обработанный_файл.xlsx")
             success = processor.export(export_path)
-
             if success:
                 messagebox.showinfo("Успех", f"Файл обработан и сохранён:\n{export_path}")
                 self.reset_all()
             else:
                 messagebox.showwarning("Ошибка", "Не удалось сохранить файл.")
+
         elif mode == "timer":
             self.label_status.config(text="ИДЁТ ОБРАБОТКА...")
             self.timer = TimerRunner(source_path, output_path,
@@ -144,8 +150,34 @@ class SummaryFrame(ttk.Frame):
                                      processing_frame.cols_range.get())
             self.timer.start()
             messagebox.showinfo("Успех", "Таймер обработки запущен. Ожидайте...")
+
         elif mode == "master":
             """     Если файл то 1 если папка то 2    """
+            if mode_master == "once":
+                process_once = TableProcessor(source_filePath_master)
+                if not process_once.load():
+                    messagebox.showwarning("Ошибка", "Не удалось загрузить файл.")
+                    return
+                date_mode = processing_frame.date_mode.get()
+                date_cell = processing_frame.cellDate_master.get() if date_mode == "cell" else None
+                process_once.clean_empty_rows_master() if processing_frame.delete_rows_mode.get() == True else None
+                process_once.set_header_by_number(processing_frame.master_title_row.get())
+                process_once.select_rows(processing_frame.master_rows_range.get()) # добавить полноценную проверку ошибки
+                process_once.extract_date(date_mode, date_cell)
+                process_once.add_date_column()
+                export_path = os.path.join(output_path, "обработанный_файл.xlsx") # обработанный файл должен быть ретерном из функции
+                success = process_once.export_master(export_path)
+
+            # else:
+            #     self.label_status.config(text="ИДЁТ ОБРАБОТКА...")
+            #     self.process_timer = TimerRunner(source_folderPath_master, output_path,
+            #                                processing_frame.delete_rows_mode.get(),
+            #                                processing_frame.master_title_row.get(),
+            #                                processing_frame.master_rows_row.get(),
+            #                                processing_frame.date_mode.get(),
+            #                                processing_frame.cellDate_master.get() if processing_frame.date_mode.get() == "cell" else None)
+            #     self.process_timer.start()
+
 
     def reset_all(self):
         self.controller.source_frame.template_name.set("")

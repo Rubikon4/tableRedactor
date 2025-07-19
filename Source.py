@@ -7,6 +7,7 @@ class SourceFrame(ttk.Frame):
         super().__init__(Main, padding=10, borderwidth=2, relief="solid")
         self.controller = controller
         self.mode = tk.StringVar(value="once")
+        self.mode_master = tk.StringVar(value="")
         self.template_name = tk.StringVar()
         self.template_name.trace_add("write", self.on_template_change)
         self.source_file = ""
@@ -79,17 +80,19 @@ class SourceFrame(ttk.Frame):
                                             self.controller.processing_frame.refresh_window()
                                             ]) 
         self.btn_master_choose_file = ttk.Button(self, text="Выбрать файл",
-                                                       command=lambda:[
-                                                       self.choose_file(),
-                                                       self.controller.summary_frame.update_summary()])
+                                                 command=lambda:[
+                                                 self.mode_master.set("once"),
+                                                 self.choose_file(),
+                                                 self.controller.summary_frame.update_summary()])
         self.btn_master_choose_folder = ttk.Button(self, text="Выбрать папку",
-                                               command=lambda:[
-                                               self.choose_folder(),
-                                               self.controller.summary_frame.update_summary()])
+                                                   command=lambda:[
+                                                   self.mode_master.set("timer"),
+                                                   self.choose_folder(),
+                                                   self.controller.summary_frame.update_summary()])
         label_master_example = ttk.Label(self, text="Шаблон названия файла:")
         self.entry_master_template = ttk.Entry(self, textvariable=self.template_name)
         self.entry_master_template.bind("<Return>", lambda e: [self.validate_template(), 
-                                                   self.entry_master_template.master.focus_set()])
+                                                    self.entry_master_template.master.focus_set()])
         
         self.radio_master.grid(row=0, column=3, sticky="w", padx=5, pady=5)
         self.btn_master_choose_file.grid(row=1, column=3, sticky="w", padx=5, pady=5)
@@ -132,6 +135,7 @@ class SourceFrame(ttk.Frame):
         folder_path = filedialog.askdirectory()
         if folder_path:
             self.source_folder = folder_path
+
     def choose_output_folder(self):
         folder_path = filedialog.askdirectory()
         if folder_path:

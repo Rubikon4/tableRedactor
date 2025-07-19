@@ -10,7 +10,7 @@ class ProcessingFrame(ttk.Frame):
         self.rows_range = tk.StringVar()
         self.cols_range = tk.StringVar()
 
-        # self.delete_rows_mode = tk.StringVar()
+        self.delete_rows_mode = tk.StringVar()
         self.entry_rows_master = tk.StringVar()
         self.master_title_row = tk.StringVar()
         self.master_rows_range = tk.StringVar()
@@ -62,7 +62,7 @@ class ProcessingFrame(ttk.Frame):
         """    MASTER   """
         self.label_master = ttk.Label(self, text="Настройки расширенной обработки:")
         self.ckbtn_deleteRows_master = ttk.Checkbutton(self, text="Очистить пустые строки?",
-                                                        # variable=self.delete_rows_mode,
+                                                        variable=self.delete_rows_mode, onvalue=True, offvalue=False,
                                                         command=lambda: [self.update_input_state(),
                                                                          self.controller.summary_frame.update_summary()])
         self.label_titleRowNum_master = ttk.Label(self, text="Номер строки заголовка")
